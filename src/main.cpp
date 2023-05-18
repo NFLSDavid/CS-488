@@ -6,8 +6,8 @@ CS488Window CS488;
 static void draw() {
     for (int j = 0; j < globalHeight; j++) {
         for (int i = 0; i < globalWidth; i++) {
-            FrameBuffer.pixel(i, j) = float3(PCG32::rand()); // noise
-            //FrameBuffer.pixel(i, j) = float3(0.5f * (cos((i + globalFrameCount) * 0.1f) + 1.0f)); // moving cosine
+            // FrameBuffer.pixel(i, j) = float3(PCG32::rand()); // noise
+            FrameBuffer.pixel(i, j) = float3(0.5f * (cos((i + globalFrameCount) * 0.1f) + 1.0f)); // moving cosine
         }
     }
 }

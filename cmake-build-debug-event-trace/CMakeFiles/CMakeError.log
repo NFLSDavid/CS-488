@@ -1,0 +1,93 @@
+Checking whether the C compiler is IAR using "" did not match "IAR .+ Compiler":
+xcrun: error: invalid active developer path (/Library/Developer/CommandLineTools), missing xcrun at: /Library/Developer/CommandLineTools/usr/bin/xcrun
+Checking whether the C compiler is IAR using "" did not match "IAR .+ Compiler":
+xcrun: error: invalid active developer path (/Library/Developer/CommandLineTools), missing xcrun at: /Library/Developer/CommandLineTools/usr/bin/xcrun
+Checking whether the CXX compiler is IAR using "" did not match "IAR .+ Compiler":
+xcrun: error: invalid active developer path (/Library/Developer/CommandLineTools), missing xcrun at: /Library/Developer/CommandLineTools/usr/bin/xcrun
+Checking whether the CXX compiler is IAR using "" did not match "IAR .+ Compiler":
+xcrun: error: invalid active developer path (/Library/Developer/CommandLineTools), missing xcrun at: /Library/Developer/CommandLineTools/usr/bin/xcrun
+Detecting C compiler ABI info failed to compile with the following output:
+Change Dir: /Users/fangwenyu/Desktop/loo/Spring 2023/CS 488/CS-488/cmake-build-debug-event-trace/CMakeFiles/CMakeScratch/TryCompile-puJV7S
+
+Run Build Command(s):/Users/fangwenyu/Library/Application Support/JetBrains/Toolbox/apps/CLion/ch-0/231.8770.66/CLion.app/Contents/bin/ninja/mac/ninja cmTC_5aa9d && [1/2] Building C object CMakeFiles/cmTC_5aa9d.dir/CMakeCCompilerABI.c.o
+FAILED: CMakeFiles/cmTC_5aa9d.dir/CMakeCCompilerABI.c.o 
+/usr/bin/cc    -o CMakeFiles/cmTC_5aa9d.dir/CMakeCCompilerABI.c.o -c '/Users/fangwenyu/Library/Application Support/JetBrains/Toolbox/apps/CLion/ch-0/231.8770.66/CLion.app/Contents/bin/cmake/mac/share/cmake-3.25/Modules/CMakeCCompilerABI.c'
+xcrun: error: invalid active developer path (/Library/Developer/CommandLineTools), missing xcrun at: /Library/Developer/CommandLineTools/usr/bin/xcrun
+ninja: build stopped: subcommand failed.
+
+
+
+
+Determining if the C compiler works failed with the following output:
+Change Dir: /Users/fangwenyu/Desktop/loo/Spring 2023/CS 488/CS-488/cmake-build-debug-event-trace/CMakeFiles/CMakeScratch/TryCompile-g2cghv
+
+Run Build Command(s):/Users/fangwenyu/Library/Application Support/JetBrains/Toolbox/apps/CLion/ch-0/231.8770.66/CLion.app/Contents/bin/ninja/mac/ninja cmTC_fd405 && [1/2] Building C object CMakeFiles/cmTC_fd405.dir/testCCompiler.c.o
+FAILED: CMakeFiles/cmTC_fd405.dir/testCCompiler.c.o 
+/usr/bin/cc    -o CMakeFiles/cmTC_fd405.dir/testCCompiler.c.o -c '/Users/fangwenyu/Desktop/loo/Spring 2023/CS 488/CS-488/cmake-build-debug-event-trace/CMakeFiles/CMakeScratch/TryCompile-g2cghv/testCCompiler.c'
+xcrun: error: invalid active developer path (/Library/Developer/CommandLineTools), missing xcrun at: /Library/Developer/CommandLineTools/usr/bin/xcrun
+ninja: build stopped: subcommand failed.
+
+
+
+Checking whether the C compiler is IAR using "" did not match "IAR .+ Compiler":
+xcrun: error: invalid active developer path (/Library/Developer/CommandLineTools), missing xcrun at: /Library/Developer/CommandLineTools/usr/bin/xcrun
+Checking whether the C compiler is IAR using "" did not match "IAR .+ Compiler":
+xcrun: error: invalid active developer path (/Library/Developer/CommandLineTools), missing xcrun at: /Library/Developer/CommandLineTools/usr/bin/xcrun
+Checking whether the CXX compiler is IAR using "" did not match "IAR .+ Compiler":
+xcrun: error: invalid active developer path (/Library/Developer/CommandLineTools), missing xcrun at: /Library/Developer/CommandLineTools/usr/bin/xcrun
+Checking whether the CXX compiler is IAR using "" did not match "IAR .+ Compiler":
+xcrun: error: invalid active developer path (/Library/Developer/CommandLineTools), missing xcrun at: /Library/Developer/CommandLineTools/usr/bin/xcrun
+Detecting C compiler ABI info failed to compile with the following output:
+Change Dir: /Users/fangwenyu/Desktop/loo/Spring 2023/CS 488/CS-488/cmake-build-debug-event-trace/CMakeFiles/CMakeScratch/TryCompile-ruvEHS
+
+Run Build Command(s):/Users/fangwenyu/Library/Application Support/JetBrains/Toolbox/apps/CLion/ch-0/231.8770.66/CLion.app/Contents/bin/ninja/mac/ninja cmTC_b2b6d && [1/2] Building C object CMakeFiles/cmTC_b2b6d.dir/CMakeCCompilerABI.c.o
+FAILED: CMakeFiles/cmTC_b2b6d.dir/CMakeCCompilerABI.c.o 
+/usr/bin/cc    -o CMakeFiles/cmTC_b2b6d.dir/CMakeCCompilerABI.c.o -c '/Users/fangwenyu/Library/Application Support/JetBrains/Toolbox/apps/CLion/ch-0/231.8770.66/CLion.app/Contents/bin/cmake/mac/share/cmake-3.25/Modules/CMakeCCompilerABI.c'
+xcrun: error: invalid active developer path (/Library/Developer/CommandLineTools), missing xcrun at: /Library/Developer/CommandLineTools/usr/bin/xcrun
+ninja: build stopped: subcommand failed.
+
+
+
+
+Determining if the C compiler works failed with the following output:
+Change Dir: /Users/fangwenyu/Desktop/loo/Spring 2023/CS 488/CS-488/cmake-build-debug-event-trace/CMakeFiles/CMakeScratch/TryCompile-zUfBOQ
+
+Run Build Command(s):/Users/fangwenyu/Library/Application Support/JetBrains/Toolbox/apps/CLion/ch-0/231.8770.66/CLion.app/Contents/bin/ninja/mac/ninja cmTC_c1902 && [1/2] Building C object CMakeFiles/cmTC_c1902.dir/testCCompiler.c.o
+FAILED: CMakeFiles/cmTC_c1902.dir/testCCompiler.c.o 
+/usr/bin/cc    -o CMakeFiles/cmTC_c1902.dir/testCCompiler.c.o -c '/Users/fangwenyu/Desktop/loo/Spring 2023/CS 488/CS-488/cmake-build-debug-event-trace/CMakeFiles/CMakeScratch/TryCompile-zUfBOQ/testCCompiler.c'
+xcrun: error: invalid active developer path (/Library/Developer/CommandLineTools), missing xcrun at: /Library/Developer/CommandLineTools/usr/bin/xcrun
+ninja: build stopped: subcommand failed.
+
+
+
+Checking whether the C compiler is IAR using "" did not match "IAR .+ Compiler":
+xcrun: error: invalid active developer path (/Library/Developer/CommandLineTools), missing xcrun at: /Library/Developer/CommandLineTools/usr/bin/xcrun
+Checking whether the C compiler is IAR using "" did not match "IAR .+ Compiler":
+xcrun: error: invalid active developer path (/Library/Developer/CommandLineTools), missing xcrun at: /Library/Developer/CommandLineTools/usr/bin/xcrun
+Checking whether the CXX compiler is IAR using "" did not match "IAR .+ Compiler":
+xcrun: error: invalid active developer path (/Library/Developer/CommandLineTools), missing xcrun at: /Library/Developer/CommandLineTools/usr/bin/xcrun
+Checking whether the CXX compiler is IAR using "" did not match "IAR .+ Compiler":
+xcrun: error: invalid active developer path (/Library/Developer/CommandLineTools), missing xcrun at: /Library/Developer/CommandLineTools/usr/bin/xcrun
+Detecting C compiler ABI info failed to compile with the following output:
+Change Dir: /Users/fangwenyu/Desktop/loo/Spring 2023/CS 488/CS-488/cmake-build-debug-event-trace/CMakeFiles/CMakeScratch/TryCompile-AiQVj7
+
+Run Build Command(s):/Users/fangwenyu/Library/Application Support/JetBrains/Toolbox/apps/CLion/ch-0/231.8770.66/CLion.app/Contents/bin/ninja/mac/ninja cmTC_6be1a && [1/2] Building C object CMakeFiles/cmTC_6be1a.dir/CMakeCCompilerABI.c.o
+FAILED: CMakeFiles/cmTC_6be1a.dir/CMakeCCompilerABI.c.o 
+/usr/bin/cc    -o CMakeFiles/cmTC_6be1a.dir/CMakeCCompilerABI.c.o -c '/Users/fangwenyu/Library/Application Support/JetBrains/Toolbox/apps/CLion/ch-0/231.8770.66/CLion.app/Contents/bin/cmake/mac/share/cmake-3.25/Modules/CMakeCCompilerABI.c'
+xcrun: error: invalid active developer path (/Library/Developer/CommandLineTools), missing xcrun at: /Library/Developer/CommandLineTools/usr/bin/xcrun
+ninja: build stopped: subcommand failed.
+
+
+
+
+Determining if the C compiler works failed with the following output:
+Change Dir: /Users/fangwenyu/Desktop/loo/Spring 2023/CS 488/CS-488/cmake-build-debug-event-trace/CMakeFiles/CMakeScratch/TryCompile-mqlDMX
+
+Run Build Command(s):/Users/fangwenyu/Library/Application Support/JetBrains/Toolbox/apps/CLion/ch-0/231.8770.66/CLion.app/Contents/bin/ninja/mac/ninja cmTC_d22b2 && [1/2] Building C object CMakeFiles/cmTC_d22b2.dir/testCCompiler.c.o
+FAILED: CMakeFiles/cmTC_d22b2.dir/testCCompiler.c.o 
+/usr/bin/cc    -o CMakeFiles/cmTC_d22b2.dir/testCCompiler.c.o -c '/Users/fangwenyu/Desktop/loo/Spring 2023/CS 488/CS-488/cmake-build-debug-event-trace/CMakeFiles/CMakeScratch/TryCompile-mqlDMX/testCCompiler.c'
+xcrun: error: invalid active developer path (/Library/Developer/CommandLineTools), missing xcrun at: /Library/Developer/CommandLineTools/usr/bin/xcrun
+ninja: build stopped: subcommand failed.
+
+
+
