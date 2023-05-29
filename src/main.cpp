@@ -16,8 +16,6 @@ static void A0(int argc, const char* argv[]) {
     CS488.process = draw;
 }
 
-
-
 // setting up lighting
 static PointLightSource light;
 static void setupLightSource() {
@@ -26,8 +24,6 @@ static void setupLightSource() {
     light.wattage = float3(1000.0f, 1000.0f, 1000.0f);
     globalScene.addLight(&light);
 }
-
-
 
 // ======== you probably don't need to modify below in A1 to A3 ========
 // loading .obj file from the command line arguments
@@ -70,8 +66,8 @@ static void A3(int argc, const char* argv[]) {
 
 
 int main(int argc, const char* argv[]) {
-    A0(argc, argv);
-    //A1(argc, argv);
+    //A0(argc, argv);
+    A1(argc, argv);
     //A2(argc, argv);
     //A3(argc, argv);
 

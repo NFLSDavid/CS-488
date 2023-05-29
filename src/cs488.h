@@ -641,6 +641,33 @@ public:
 		// you do not need to implement clipping
 		// you may call the "shade" function to get the pixel value
 		// (you may ignore viewDir for now)
+        std::vector<float2> my_vertices;
+        for (unsigned int i = 0; i < 3; ++i) {
+            /*
+            std::cout << "Original position for vertex " << i << ":" << std::endl
+                      << "x: " << tri.positions[i].x << "; y: " << tri.positions[i].y
+                      << "; z: " << tri.positions[i].z << std::endl;
+            */
+
+            float4 p = {tri.positions[i], 1.0};
+            p = mul(plm, p);
+            float4 renew_p = p / p.w;
+            /*
+            std::cout << "Transformed position for vertex " << i << ":" << std::endl
+                      << "x: " << p.x << "; y: " << p.y << "; z: " << p.z
+                      << "; w: " << p.w << std::endl;
+            */
+
+            float fitted_p_x = (renew_p.x + 1) * globalWidth / 2;
+            float fitted_p_y = (renew_p.y + 1) * globalHeight / 2;
+            my_vertices.emplace_back(fitted_p_x, fitted_p_y);
+            FrameBuffer.pixel(fitted_p_x, fitted_p_y) = float3(1.0f);
+            // std::cout << FrameBuffer.valid((p.x + 1) * globalWidth / 2, (p.y + 1) * globalHeight / 2) << std::endl;
+        }
+
+        // Find three lines judge func:
+
+
 	}
 
 
@@ -1529,7 +1556,7 @@ public:
 	}
 
 	// ray-scene intersection
-	bool intersect(HitInfo& minHit, const Ray& ray, float tMin = 0.0f, float tMax = FLT_MAX) const {
+	bool intersect(HitInfo& minHit , const Ray& ray, float tMin = 0.0f, float tMax = FLT_MAX) const {
 		bool hit = false;
 		HitInfo tempMinHit;
 		minHit.t = FLT_MAX;
@@ -1547,6 +1574,7 @@ public:
 	}
 
 	// camera -> screen matrix (given to you for A1)
+    // perspective transform matrix in transform-b
 	float4x4 perspectiveMatrix(float fovy, float aspect, float zNear, float zFar) const {
 		float4x4 m;
 		const float f = 1.0f / (tan(fovy * DegToRad / 2.0f));
