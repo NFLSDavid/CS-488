@@ -634,6 +634,13 @@ public:
 		}
 	}
 
+    // used to check whether inputPoint is on the line;
+    bool judgeLine(const float2 &inputPoint, const float2 &vertex0, const float2 &vertex1) const {
+        return -(inputPoint.x - vertex0.x) * (vertex1.y - vertex0.y) +
+               (inputPoint.y - vertex0.y) * (vertex1.x - vertex0.x) < 0
+               ? false : true;
+    }
+
 	void rasterizeTriangle(const Triangle& tri, const float4x4& plm) const {
 		// ====== implement it in A1 ======
 		// rasterization of a triangle
@@ -648,7 +655,6 @@ public:
                       << "x: " << tri.positions[i].x << "; y: " << tri.positions[i].y
                       << "; z: " << tri.positions[i].z << std::endl;
             */
-
             float4 p = {tri.positions[i], 1.0};
             p = mul(plm, p);
             float4 renew_p = p / p.w;
@@ -657,17 +663,25 @@ public:
                       << "x: " << p.x << "; y: " << p.y << "; z: " << p.z
                       << "; w: " << p.w << std::endl;
             */
-
-            float fitted_p_x = (renew_p.x + 1) * globalWidth / 2;
-            float fitted_p_y = (renew_p.y + 1) * globalHeight / 2;
-            my_vertices.emplace_back(fitted_p_x, fitted_p_y);
+            int fitted_p_x = (int) ((renew_p.x + 1) * globalWidth / 2);
+            int fitted_p_y = (int) ((renew_p.y + 1) * globalHeight / 2);
+            my_vertices.emplace_back(fitted_p_x + 0.5, fitted_p_y + 0.5);
+            std::cout << fitted_p_x + 0.5 << " " << fitted_p_y + 0.5 << std::endl;
             FrameBuffer.pixel(fitted_p_x, fitted_p_y) = float3(1.0f);
             // std::cout << FrameBuffer.valid((p.x + 1) * globalWidth / 2, (p.y + 1) * globalHeight / 2) << std::endl;
         }
-
-        // Find three lines judge func:
-
-
+        // Find three lines judge funcs:
+        auto paint_color = materials[tri.idMaterial].Kd;
+        for (int i = 0; i < globalWidth; ++i) {
+            for (int j = 0; j < globalHeight; ++j) {
+                float2 input_point {i + 0.5, j + 0.5};
+                if (judgeLine(input_point, my_vertices[0], my_vertices[1]) &&
+                    judgeLine(input_point, my_vertices[1], my_vertices[2]) &&
+                    judgeLine(input_point, my_vertices[2], my_vertices[0])) {
+                    FrameBuffer.pixel(i, j) = paint_color;
+                }
+            }
+        }
 	}
 
 
