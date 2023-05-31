@@ -635,10 +635,26 @@ public:
 	}
 
     // used to check whether inputPoint is on the line;
-    bool judgeLine(const float2 &inputPoint, const float2 &vertex0, const float2 &vertex1) const {
+    static bool judgeLine(const float2 &inputPoint, const float2 &vertex0, const float2 &vertex1) {
         return -(inputPoint.x - vertex0.x) * (vertex1.y - vertex0.y) +
-               (inputPoint.y - vertex0.y) * (vertex1.x - vertex0.x) < 0
-               ? false : true;
+               (inputPoint.y - vertex0.y) * (vertex1.x - vertex0.x) >= 0;
+    }
+
+    static float triArea2(const float2 &vertex0, const float2 &vertex1, const float2 &midP) {
+        return fabs(cross(vertex0 - midP, vertex1 - midP));
+    }
+
+    static float3 baryCoord(std::array<float4, 3> const &vertices, float2 v) {
+        float totArea = triArea2(vertices[0].xy(), vertices[1].xy(), vertices[2].xy());
+        float v0Area = triArea2(vertices[1].xy(), vertices[2].xy(), v);
+        float v1Area = triArea2(vertices[0].xy(), vertices[2].xy(), v);
+        float phi0 = v0Area / totArea;
+        float phi1 = v1Area / totArea;
+        return {phi0, phi1, 1 - phi0 - phi1};
+    }
+
+    static float interpolate(float3 baryCoords, float3 values) {
+        return dot(baryCoords, values);
     }
 
 	void rasterizeTriangle(const Triangle& tri, const float4x4& plm) const {
@@ -648,7 +664,7 @@ public:
 		// you do not need to implement clipping
 		// you may call the "shade" function to get the pixel value
 		// (you may ignore viewDir for now)
-        std::vector<float2> my_vertices;
+        std::array<float4, 3> my_vertices;
         for (unsigned int i = 0; i < 3; ++i) {
             /*
             std::cout << "Original position for vertex " << i << ":" << std::endl
@@ -665,23 +681,30 @@ public:
             */
             int fitted_p_x = (int) ((renew_p.x + 1) * globalWidth / 2);
             int fitted_p_y = (int) ((renew_p.y + 1) * globalHeight / 2);
-            my_vertices.emplace_back(fitted_p_x + 0.5, fitted_p_y + 0.5);
-            std::cout << fitted_p_x + 0.5 << " " << fitted_p_y + 0.5 << std::endl;
-            FrameBuffer.pixel(fitted_p_x, fitted_p_y) = float3(1.0f);
+            my_vertices[i] = {fitted_p_x + 0.5, fitted_p_y + 0.5, renew_p.z, p.w};
+            // std::cout << fitted_p_x + 0.5 << " " << fitte d_p_y + 0.5 << std::endl;
+            // FrameBuffer.pixel(fitted_p_x, fitted_p_y) = float3(1.0f);
             // std::cout << FrameBuffer.valid((p.x + 1) * globalWidth / 2, (p.y + 1) * globalHeight / 2) << std::endl;
         }
-        // Find three lines judge funcs:
+        // Find three lines judge funcs and judge every point recursively;
         auto paint_color = materials[tri.idMaterial].Kd;
         for (int i = 0; i < globalWidth; ++i) {
             for (int j = 0; j < globalHeight; ++j) {
                 float2 input_point {i + 0.5, j + 0.5};
-                if (judgeLine(input_point, my_vertices[0], my_vertices[1]) &&
-                    judgeLine(input_point, my_vertices[1], my_vertices[2]) &&
-                    judgeLine(input_point, my_vertices[2], my_vertices[0])) {
-                    FrameBuffer.pixel(i, j) = paint_color;
+                if (judgeLine(input_point, my_vertices[0].xy(), my_vertices[1].xy()) &&
+                    judgeLine(input_point, my_vertices[1].xy(), my_vertices[2].xy()) &&
+                    judgeLine(input_point, my_vertices[2].xy(), my_vertices[0].xy())) {
+                    auto baryCoords = baryCoord(my_vertices, input_point);
+                    float cur_z = interpolate(baryCoords, {my_vertices[0].z, my_vertices[1].z, my_vertices[2].z});
+                    if (cur_z < FrameBuffer.depth(i, j)) {
+                        FrameBuffer.pixel(i, j) = paint_color;
+                        FrameBuffer.depth(i, j) = cur_z;
+                    }
                 }
             }
         }
+        // Z-buffer
+
 	}
 
 
