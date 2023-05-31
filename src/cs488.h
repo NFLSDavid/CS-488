@@ -682,28 +682,39 @@ public:
             int fitted_p_x = (int) ((renew_p.x + 1) * globalWidth / 2);
             int fitted_p_y = (int) ((renew_p.y + 1) * globalHeight / 2);
             my_vertices[i] = {fitted_p_x + 0.5, fitted_p_y + 0.5, renew_p.z, p.w};
-            // std::cout << fitted_p_x + 0.5 << " " << fitte d_p_y + 0.5 << std::endl;
+            // std::cout << fitted_p_x + 0.5 << " " << fitted_p_y + 0.5 << std::endl;
+            // std::cout << p.x << " " << p.y << " " << p.z << " " << p.w << std::endl;
             // FrameBuffer.pixel(fitted_p_x, fitted_p_y) = float3(1.0f);
             // std::cout << FrameBuffer.valid((p.x + 1) * globalWidth / 2, (p.y + 1) * globalHeight / 2) << std::endl;
         }
         // Find three lines judge funcs and judge every point recursively;
-        auto paint_color = materials[tri.idMaterial].Kd;
         for (int i = 0; i < globalWidth; ++i) {
             for (int j = 0; j < globalHeight; ++j) {
                 float2 input_point {i + 0.5, j + 0.5};
-                if (judgeLine(input_point, my_vertices[0].xy(), my_vertices[1].xy()) &&
-                    judgeLine(input_point, my_vertices[1].xy(), my_vertices[2].xy()) &&
-                    judgeLine(input_point, my_vertices[2].xy(), my_vertices[0].xy())) {
+                bool judge1 = judgeLine(input_point, my_vertices[0].xy(), my_vertices[1].xy());
+                bool judge2 = judgeLine(input_point, my_vertices[1].xy(), my_vertices[2].xy());
+                bool judge3 = judgeLine(input_point, my_vertices[2].xy(), my_vertices[0].xy());
+                if (judge1 && judge2 && judge3 || !judge1 && !judge2 && !judge3) {
                     auto baryCoords = baryCoord(my_vertices, input_point);
                     float cur_z = interpolate(baryCoords, {my_vertices[0].z, my_vertices[1].z, my_vertices[2].z});
-                    if (cur_z < FrameBuffer.depth(i, j)) {
-                        FrameBuffer.pixel(i, j) = paint_color;
-                        FrameBuffer.depth(i, j) = cur_z;
+                    float cur_inv_w = interpolate(baryCoords, {1 / my_vertices[0].w, 1 / my_vertices[1].w, 1 / my_vertices[2].w});
+                    float tx = interpolate(baryCoords, {tri.texcoords[0].x / my_vertices[0].w, tri.texcoords[1].x / my_vertices[1].w, tri.texcoords[2].x / my_vertices[2].w});
+                    float ty = interpolate(baryCoords, {tri.texcoords[0].y / my_vertices[0].w, tri.texcoords[1].y / my_vertices[1].w, tri.texcoords[2].y / my_vertices[2].w});
+                    float dep = cur_z;
+                    if (dep < FrameBuffer.depth(i, j)) {
+                        // std::cout << cur_z << std::endl;
+                        HitInfo hit;
+                        hit.T = {tx / cur_inv_w, ty / cur_inv_w};
+                        hit.material = &materials[tri.idMaterial];
+                        auto col = shade(hit, float3{0, 1, 0});
+                        // std::cout << col.x << ' ' << col.y << ' ' << col.z << std::endl;
+                        // FrameBuffer.pixel(i, j) = float3{dep, dep, dep} / 2;
+                        FrameBuffer.pixel(i, j) = col;
+                        FrameBuffer.depth(i, j) = dep;
                     }
                 }
             }
         }
-        // Z-buffer
 
 	}
 
