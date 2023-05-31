@@ -700,8 +700,7 @@ public:
                     float cur_inv_w = interpolate(baryCoords, {1 / my_vertices[0].w, 1 / my_vertices[1].w, 1 / my_vertices[2].w});
                     float tx = interpolate(baryCoords, {tri.texcoords[0].x / my_vertices[0].w, tri.texcoords[1].x / my_vertices[1].w, tri.texcoords[2].x / my_vertices[2].w});
                     float ty = interpolate(baryCoords, {tri.texcoords[0].y / my_vertices[0].w, tri.texcoords[1].y / my_vertices[1].w, tri.texcoords[2].y / my_vertices[2].w});
-                    float dep = cur_z;
-                    if (dep < FrameBuffer.depth(i, j)) {
+                    if (cur_z < FrameBuffer.depth(i, j)) {
                         // std::cout << cur_z << std::endl;
                         HitInfo hit;
                         hit.T = {tx / cur_inv_w, ty / cur_inv_w};
@@ -710,7 +709,7 @@ public:
                         // std::cout << col.x << ' ' << col.y << ' ' << col.z << std::endl;
                         // FrameBuffer.pixel(i, j) = float3{dep, dep, dep} / 2;
                         FrameBuffer.pixel(i, j) = col;
-                        FrameBuffer.depth(i, j) = dep;
+                        FrameBuffer.depth(i, j) = cur_z;
                     }
                 }
             }
