@@ -1768,7 +1768,11 @@ static float3 shade(const HitInfo& hit, const float3& viewDir, const int level) 
 		// loop over all of the point light sources
 		for (int i = 0; i < globalScene.pointLightSources.size(); i++) {
 			float3 l = globalScene.pointLightSources[i]->position - hit.P;
-
+            HitInfo tmp_hit;
+            globalScene.intersect(tmp_hit, {globalScene.pointLightSources[i]->position, -l});
+            if (abs(length(hit.P - tmp_hit.P)) >= Epsilon ) {
+                continue;
+            }
 			// the inverse-squared falloff
 			const float falloff = length2(l);
 
@@ -1782,7 +1786,8 @@ static float3 shade(const HitInfo& hit, const float3& viewDir, const int level) 
 			if (hit.material->isTextured) {
 				brdf *= hit.material->fetchTexture(hit.T);
 			}
-			return brdf * PI; //debug output
+
+			// return brdf * PI; //debug output
 
 			L += irradiance * brdf;
 		}
