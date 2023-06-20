@@ -644,10 +644,10 @@ public:
         return fabs(cross(vertex0 - midP, vertex1 - midP));
     }
 
-    static float3 baryCoord(std::array<float4, 3> const &vertices, float2 v) {
-        float totArea = triArea2(vertices[0].xy(), vertices[1].xy(), vertices[2].xy());
-        float v0Area = triArea2(vertices[1].xy(), vertices[2].xy(), v);
-        float v1Area = triArea2(vertices[0].xy(), vertices[2].xy(), v);
+    static float3 baryCoord(std::array<float2, 3> const &vertices, float2 v) {
+        float totArea = triArea2(vertices[0], vertices[1], vertices[2]);
+        float v0Area = triArea2(vertices[1], vertices[2], v);
+        float v1Area = triArea2(vertices[0], vertices[2], v);
         float phi0 = v0Area / totArea;
         float phi1 = v1Area / totArea;
         return {phi0, phi1, 1 - phi0 - phi1};
@@ -687,6 +687,7 @@ public:
             // FrameBuffer.pixel(fitted_p_x, fitted_p_y) = float3(1.0f);
             // std::cout << FrameBuffer.valid((p.x + 1) * globalWidth / 2, (p.y + 1) * globalHeight / 2) << std::endl;
         }
+        std::array<float2, 3> my_vertices_2 {my_vertices[0].xy(), my_vertices[1].xy(), my_vertices[2].xy()};
         // Find three lines judge funcs and judge every point recursively;
         for (int i = 0; i < globalWidth; ++i) {
             for (int j = 0; j < globalHeight; ++j) {
@@ -695,7 +696,7 @@ public:
                 bool judge2 = judgeLine(input_point, my_vertices[1].xy(), my_vertices[2].xy());
                 bool judge3 = judgeLine(input_point, my_vertices[2].xy(), my_vertices[0].xy());
                 if (judge1 && judge2 && judge3 || !judge1 && !judge2 && !judge3) {
-                    auto baryCoords = baryCoord(my_vertices, input_point);
+                    auto baryCoords = baryCoord(my_vertices_2, input_point);
                     float cur_z = interpolate(baryCoords, {my_vertices[0].z, my_vertices[1].z, my_vertices[2].z});
                     float cur_inv_w = interpolate(baryCoords, {1 / my_vertices[0].w, 1 / my_vertices[1].w, 1 / my_vertices[2].w});
                     float tx = interpolate(baryCoords, {tri.texcoords[0].x / my_vertices[0].w, tri.texcoords[1].x / my_vertices[1].w, tri.texcoords[2].x / my_vertices[2].w});
@@ -723,6 +724,38 @@ public:
 		// ray-triangle intersection
 		// fill in "result" when there is an intersection
 		// return true/false if there is an intersection or not
+        std::array<float3, 4> tmp;
+        tmp[0] = tri.positions[0] - tri.positions[1];
+        tmp[1] = tri.positions[0] - tri.positions[2];
+        tmp[2] = ray.d;
+        tmp[3] = tri.positions[0] - ray.o;
+        float tmp_det = dot(cross(tmp[0], tmp[1]), tmp[2]);
+        if (abs(tmp_det) > Epsilon) {
+            float beta = dot(cross(tmp[3], tmp[1]), tmp[2]) / tmp_det;
+            float gamma = dot(cross(tmp[0], tmp[3]), tmp[2]) / tmp_det;
+            float t = dot(cross(tmp[0], tmp[1]), tmp[3]) / tmp_det;
+            float alpha = 1 - beta - gamma;
+            if (0 < beta and beta < 1 and 0 < gamma and gamma < 1 and
+                0 < alpha and alpha < 1 and tMin < t and t < tMax) {
+                // then we calculate p
+                result.P = ray.o + t * ray.d;
+                float inter_n_x = interpolate({alpha, beta, gamma},
+                                            {tri.normals[0].x, tri.normals[1].x, tri.normals[2].x});
+                float inter_n_y = interpolate({alpha, beta, gamma},
+                                            {tri.normals[0].y, tri.normals[1].y, tri.normals[2].y});
+                float inter_n_z = interpolate({alpha, beta, gamma},
+                                            {tri.normals[0].z, tri.normals[1].z, tri.normals[2].z});
+                result.N = {inter_n_x, inter_n_y, inter_n_z};
+                result.material = &materials[tri.idMaterial];
+                result.t = t;
+                float inter_T_x = interpolate({alpha, beta, gamma},
+                                              {tri.texcoords[0].x, tri.texcoords[1].x, tri.texcoords[2].x});
+                float inter_T_y = interpolate({alpha, beta, gamma},
+                                              {tri.texcoords[0].y, tri.texcoords[1].y, tri.texcoords[2].y});
+                result.T = {inter_T_x, inter_T_y};
+                return true;
+            }
+        }
 		return false;
 	}
 

@@ -61,7 +61,7 @@ add_library(libglew_static STATIC IMPORTED)
 set_target_properties(libglew_static PROPERTIES
   INTERFACE_COMPILE_DEFINITIONS "GLEW_STATIC;GLEW_NO_GLU"
   INTERFACE_INCLUDE_DIRECTORIES "${_IMPORT_PREFIX}/include"
-  INTERFACE_LINK_LIBRARIES "OpenGL::GL;/Library/Developer/CommandLineTools/SDKs/MacOSX11.1.sdk/System/Library/Frameworks/AGL.framework"
+  INTERFACE_LINK_LIBRARIES "OpenGL::GL;/Library/Developer/CommandLineTools/SDKs/MacOSX13.3.sdk/System/Library/Frameworks/AGL.framework"
 )
 
 # Create imported target libglew_shared
@@ -70,7 +70,7 @@ add_library(libglew_shared SHARED IMPORTED)
 set_target_properties(libglew_shared PROPERTIES
   INTERFACE_COMPILE_DEFINITIONS "GLEW_NO_GLU"
   INTERFACE_INCLUDE_DIRECTORIES "${_IMPORT_PREFIX}/include"
-  INTERFACE_LINK_LIBRARIES "OpenGL::GL;/Library/Developer/CommandLineTools/SDKs/MacOSX11.1.sdk/System/Library/Frameworks/AGL.framework"
+  INTERFACE_LINK_LIBRARIES "OpenGL::GL;/Library/Developer/CommandLineTools/SDKs/MacOSX13.3.sdk/System/Library/Frameworks/AGL.framework"
 )
 
 if(CMAKE_VERSION VERSION_LESS 2.8.12)
