@@ -236,7 +236,7 @@ Image FrameBuffer(globalWidth, globalHeight);
 Image AccumulationBuffer(globalWidth, globalHeight);
 unsigned int sampleCount = 0;
 
-
+Image EnvMap;
 
 // keyboard events (you do not need to modify it unless you want to)
 void keyFunc(GLFWwindow* window, int key, int scancode, int action, int mods) {
@@ -612,7 +612,7 @@ struct Triangle {
 
 
 // triangle mesh
-static float3 shade(const HitInfo& hit, const float3& viewDir, const int level = 0);
+static float3 shade(const HitInfo& hit, const float3& viewDir, const int level = 0, const int max_level = 5);
 class TriangleMesh {
 public:
 	std::vector<Triangle> triangles;
@@ -1607,10 +1607,12 @@ public:
 static ParticleSystem globalParticleSystem;
 
 
-
-
-
-
+static float3 get_env_map(const float3 &dir) {
+    float r = 1 / PI * acos(dir.z) / sqrt(pow(dir.x, 2) + pow(dir.y, 2));
+    int fitted_x = (int) ((dir.x * r + 1) * EnvMap.width / 2);
+    int fitted_y = (int) ((dir.y * r + 1) * EnvMap.height / 2);
+    return EnvMap.pixel(fitted_x, fitted_y);
+}
 
 
 // scene definition
@@ -1721,7 +1723,7 @@ public:
 		return Ray(globalEye, normalize(pixelPos - globalEye));
 	}
 
-	// ray tracing (you probably don't need to change it in A2)
+    // ray tracing (you probably don't need to change it in A2)
 	void Raytrace() const {
 		FrameBuffer.clear();
 
@@ -1733,7 +1735,7 @@ public:
 				if (intersect(hitInfo, ray)) {
 					FrameBuffer.pixel(i, j) = shade(hitInfo, -ray.d);
 				} else {
-					FrameBuffer.pixel(i, j) = float3(0.0f);
+					FrameBuffer.pixel(i, j) = get_env_map(ray.d);
 				}
 			}
 
@@ -1754,12 +1756,9 @@ public:
 };
 static Scene globalScene;
 
-
-
-
 // ====== implement it in A2 ======
 // fill in the missing parts
-static float3 shade(const HitInfo& hit, const float3& viewDir, const int level) {
+static float3 shade(const HitInfo& hit, const float3& viewDir, const int level, const int max_level) {
 	if (hit.material->type == MAT_LAMBERTIAN) {
 		// you may want to add shadow ray tracing here in A2
 		float3 L = float3(0.0f);
@@ -1768,11 +1767,15 @@ static float3 shade(const HitInfo& hit, const float3& viewDir, const int level) 
 		// loop over all of the point light sources
 		for (int i = 0; i < globalScene.pointLightSources.size(); i++) {
 			float3 l = globalScene.pointLightSources[i]->position - hit.P;
-            HitInfo tmp_hit;
-            globalScene.intersect(tmp_hit, {globalScene.pointLightSources[i]->position, -l});
-            if (abs(length(hit.P - tmp_hit.P)) >= Epsilon ) {
+            if (dot(l, hit.N) * dot(viewDir, hit.N) < 0) {
                 continue;
             }
+            HitInfo tmp_hit;
+            globalScene.intersect(tmp_hit, {globalScene.pointLightSources[i]->position, -l});
+            if (abs(length(hit.P - tmp_hit.P)) >= Epsilon) {
+                continue;
+            }
+
 			// the inverse-squared falloff
 			const float falloff = length2(l);
 
@@ -1787,14 +1790,47 @@ static float3 shade(const HitInfo& hit, const float3& viewDir, const int level) 
 				brdf *= hit.material->fetchTexture(hit.T);
 			}
 
-			// return brdf * PI; //debug output
+            // return brdf * PI; //debug output
 
 			L += irradiance * brdf;
 		}
 		return L;
 	} else if (hit.material->type == MAT_METAL) {
-		return float3(0.0f); // replace this
+        if (level < max_level) {
+            float3 reflected_direct = normalize(-2 * dot(-viewDir, hit.N) * hit.N - viewDir);
+            Ray reflected_ray = Ray(hit.P + Epsilon * reflected_direct / 10, reflected_direct);
+            HitInfo tmp_hit;
+            if (globalScene.intersect(tmp_hit, reflected_ray)) {
+                return shade(tmp_hit, -reflected_direct, level + 1);
+            } else {
+                return get_env_map(reflected_direct);
+            }
+        }
+        return float3(0.0f); // replace this
 	} else if (hit.material->type == MAT_GLASS) {
+        auto eta = hit.material->eta;
+        if (level < max_level) {
+            float3 reflected_direct = {0, 0, 0};
+            float product = dot(viewDir, hit.N);
+            if (product > 0) {
+                float tmp = 1 - pow(1 / eta, 2) * (1 - pow(product, 2));
+                reflected_direct = normalize(1 / eta * (-viewDir + product * hit.N) - sqrt(tmp) * hit.N);
+            } else {
+                float tmp = 1 - pow(eta, 2) * (1 - pow(product, 2));
+                if (tmp > 0) {
+                    reflected_direct = normalize(eta * (-viewDir + product * hit.N) + sqrt(tmp) * hit.N);
+                } else {
+                    reflected_direct = normalize(-2 * product * hit.N - viewDir);
+                }
+            }
+            Ray reflected_ray = Ray(hit.P + Epsilon * reflected_direct / 10, reflected_direct);
+            HitInfo tmp_hit;
+            if (globalScene.intersect(tmp_hit, reflected_ray)) {
+                return shade(tmp_hit, -reflected_direct, level + 1);
+            } else {
+                return get_env_map(reflected_direct);
+            }
+        }
 		return float3(0.0f); // replace this
 	} else {
 		// something went wrong - make it apparent that it is an error
@@ -1903,6 +1939,7 @@ public:
 	void(*process)() = NULL;
 
 	void start() const {
+        EnvMap.load("../media/uffizi_probe.hdr");
 		if (globalEnableParticles) {
 			globalScene.addObject(&globalParticleSystem.particlesMesh);
 		}
