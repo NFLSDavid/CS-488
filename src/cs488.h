@@ -5,13 +5,13 @@
 #pragma once
 #define _CRT_SECURE_NO_WARNINGS
 #define NOMINMAX
+#define ASST_NUM 3
 
 
 // OpenGL
 #define GLEW_STATIC
 #include <GL/glew.h>
 #include <GLFW/glfw3.h>
-
 
 // image loader and writer
 #define STB_IMAGE_IMPLEMENTATION
@@ -73,7 +73,11 @@ const float globalDistanceToFilm = globalFilmSize / (2.0f * tan(globalFOV * DegT
 bool globalEnableParticles = false;
 constexpr float deltaT = 0.002f;
 constexpr float3 globalGravity = float3(0.0f, -9.8f, 0.0f);
+#if ASST_NUM == 3
 constexpr int globalNumParticles = 300;
+#else
+constexpr int globalNumParticles = 300;
+#endif
 
 
 // dynamic camera parameters
@@ -236,7 +240,9 @@ Image FrameBuffer(globalWidth, globalHeight);
 Image AccumulationBuffer(globalWidth, globalHeight);
 unsigned int sampleCount = 0;
 
+#if ASST_NUM == 2
 Image EnvMap;
+#endif
 
 // keyboard events (you do not need to modify it unless you want to)
 void keyFunc(GLFWwindow* window, int key, int scancode, int action, int mods) {
@@ -1528,11 +1534,11 @@ public:
 
 	void step() {
 		float3 temp = position;
-
 		// === fill in this part in A3 ===
 		// update the particle position and velocity here
-
-		prevPosition = temp;
+        velocity = velocity + globalGravity * deltaT;
+        position = position + (position - prevPosition) + deltaT * deltaT * globalGravity;
+        prevPosition = temp;
 	}
 };
 
@@ -1564,8 +1570,8 @@ public:
 			const float particleSize = 0.005f;
 			for (int i = 0; i < globalNumParticles; i++) {
 				// facing toward the camera
-				particlesMesh.triangles[i].positions[0] = particles[i].position;
 				particlesMesh.triangles[i].positions[1] = particles[i].position + particleSize * globalUp;
+                particlesMesh.triangles[i].positions[0] = particles[i].position;
 				particlesMesh.triangles[i].positions[2] = particles[i].position + particleSize * globalRight;
 				particlesMesh.triangles[i].normals[0] = -globalViewDir;
 				particlesMesh.triangles[i].normals[1] = -globalViewDir;
@@ -1606,13 +1612,14 @@ public:
 };
 static ParticleSystem globalParticleSystem;
 
-
+#if ASST_NUM == 2
 static float3 get_env_map(const float3 &dir) {
     float r = 1 / PI * acos(dir.z) / sqrt(pow(dir.x, 2) + pow(dir.y, 2));
     int fitted_x = (int) ((dir.x * r + 1) * EnvMap.width / 2);
     int fitted_y = (int) ((dir.y * r + 1) * EnvMap.height / 2);
     return EnvMap.pixel(fitted_x, fitted_y);
 }
+#endif
 
 
 // scene definition
@@ -1735,7 +1742,9 @@ public:
 				if (intersect(hitInfo, ray)) {
 					FrameBuffer.pixel(i, j) = shade(hitInfo, -ray.d);
 				} else {
+#if ASST_NUM == 2
 					FrameBuffer.pixel(i, j) = get_env_map(ray.d);
+#endif
 				}
 			}
 
@@ -1764,9 +1773,10 @@ static float3 shade(const HitInfo& hit, const float3& viewDir, const int level, 
 		float3 L = float3(0.0f);
 		float3 brdf, irradiance;
 
-		// loop over all of the point light sources
-		for (int i = 0; i < globalScene.pointLightSources.size(); i++) {
-			float3 l = globalScene.pointLightSources[i]->position - hit.P;
+		// loop over all the point light sources
+		for (auto & pointLightSource : globalScene.pointLightSources) {
+			float3 l = pointLightSource->position - hit.P;
+#if ASST_NUM == 2
             if (dot(l, hit.N) * dot(viewDir, hit.N) < 0) {
                 continue;
             }
@@ -1775,7 +1785,7 @@ static float3 shade(const HitInfo& hit, const float3& viewDir, const int level, 
             if (abs(length(hit.P - tmp_hit.P)) >= Epsilon) {
                 continue;
             }
-
+#endif
 			// the inverse-squared falloff
 			const float falloff = length2(l);
 
@@ -1783,19 +1793,22 @@ static float3 shade(const HitInfo& hit, const float3& viewDir, const int level, 
 			l /= sqrtf(falloff);
 
 			// get the irradiance
-			irradiance = float(std::max(0.0f, dot(hit.N, l)) / (4.0 * PI * falloff)) * globalScene.pointLightSources[i]->wattage;
+			irradiance = float(std::max(0.0f, dot(hit.N, l)) / (4.0 * PI * falloff)) * pointLightSource->wattage;
 			brdf = hit.material->BRDF(l, viewDir, hit.N);
 
 			if (hit.material->isTextured) {
 				brdf *= hit.material->fetchTexture(hit.T);
 			}
 
-            // return brdf * PI; //debug output
+#if ASST_NUM != 2
+            return brdf * PI; //debug output
+#endif
 
 			L += irradiance * brdf;
 		}
 		return L;
 	} else if (hit.material->type == MAT_METAL) {
+#if ASST_NUM == 2
         if (level < max_level) {
             float3 reflected_direct = normalize(-2 * dot(-viewDir, hit.N) * hit.N - viewDir);
             Ray reflected_ray = Ray(hit.P + Epsilon * reflected_direct / 10, reflected_direct);
@@ -1806,8 +1819,10 @@ static float3 shade(const HitInfo& hit, const float3& viewDir, const int level, 
                 return get_env_map(reflected_direct);
             }
         }
+#endif
         return float3(0.0f); // replace this
 	} else if (hit.material->type == MAT_GLASS) {
+#if ASST_NUM == 2
         auto eta = hit.material->eta;
         if (level < max_level) {
             float3 reflected_direct = {0, 0, 0};
@@ -1831,6 +1846,7 @@ static float3 shade(const HitInfo& hit, const float3& viewDir, const int level, 
                 return get_env_map(reflected_direct);
             }
         }
+#endif
 		return float3(0.0f); // replace this
 	} else {
 		// something went wrong - make it apparent that it is an error
@@ -1939,7 +1955,9 @@ public:
 	void(*process)() = NULL;
 
 	void start() const {
+#if ASST_NUM == 2
         EnvMap.load("../media/uffizi_probe.hdr");
+#endif
 		if (globalEnableParticles) {
 			globalScene.addObject(&globalParticleSystem.particlesMesh);
 		}
