@@ -1,12 +1,16 @@
 // =======================================
 // CS488/688 base code
-// (written by Toshiya Hachisuka)
+// (written by Toshiya Hachisuka)f
 // =======================================
 #pragma once
 #define _CRT_SECURE_NO_WARNINGS
-#define NOMINMAX
-#define ASST_NUM 3
-
+#define NOMINMAXff
+#define A3_1 3
+#define A3_2 4
+#define A3_3 5
+#define A3_4 6
+#define A3_5 7
+#define ASST_NUM A3_1
 
 // OpenGL
 #define GLEW_STATIC
@@ -68,17 +72,17 @@ constexpr float globalDepthMax = 100.0f; // for rasterization
 constexpr float globalFilmSize = 0.032f; //for ray tracing
 const float globalDistanceToFilm = globalFilmSize / (2.0f * tan(globalFOV * DegToRad * 0.5f)); // for ray tracing
 
-
 // particle system related
 bool globalEnableParticles = false;
 constexpr float deltaT = 0.002f;
 constexpr float3 globalGravity = float3(0.0f, -9.8f, 0.0f);
-#if ASST_NUM == 3
-constexpr int globalNumParticles = 300;
+#if ASST_NUM == A3_5
+constexpr int globalNumParticles = 100;
+#elif ASST_NUM == A3_1 || ASST_NUM == A3_2 || ASST_NUM == A3_3
+constexpr int globalNumParticles = 500;
 #else
 constexpr int globalNumParticles = 300;
 #endif
-
 
 // dynamic camera parameters
 float3 globalEye = float3(0.0f, 0.0f, 1.5f);
@@ -695,9 +699,13 @@ public:
         }
         std::array<float2, 3> my_vertices_2 {my_vertices[0].xy(), my_vertices[1].xy(), my_vertices[2].xy()};
         // Find three lines judge funcs and judge every point recursively;
-        for (int i = 0; i < globalWidth; ++i) {
-            for (int j = 0; j < globalHeight; ++j) {
-                float2 input_point {i + 0.5, j + 0.5};
+        float lower_bound_x = std::min(std::min(my_vertices_2[0].x, my_vertices_2[1].x), my_vertices_2[2].x);
+        float upper_bound_x = std::max(std::max(my_vertices_2[0].x, my_vertices_2[1].x), my_vertices_2[2].x);
+        float lower_bound_y = std::min(std::min(my_vertices_2[0].y, my_vertices_2[1].y), my_vertices_2[2].y);
+        float upper_bound_y = std::max(std::max(my_vertices_2[0].y, my_vertices_2[1].y), my_vertices_2[2].y);
+        for (int i = lower_bound_x; i < upper_bound_x; ++i) {
+            for (int j = lower_bound_y; j < upper_bound_y; ++j) {
+                float2 input_point {i, j};
                 bool judge1 = judgeLine(input_point, my_vertices[0].xy(), my_vertices[1].xy());
                 bool judge2 = judgeLine(input_point, my_vertices[1].xy(), my_vertices[2].xy());
                 bool judge3 = judgeLine(input_point, my_vertices[2].xy(), my_vertices[0].xy());
@@ -721,7 +729,6 @@ public:
                 }
             }
         }
-
 	}
 
 
@@ -1510,13 +1517,6 @@ bool BVH::traverse(HitInfo& minHit, const Ray& ray, int node_id, float tMin, flo
 
 
 
-
-
-
-
-
-
-
 // ====== implement it in A3 ======
 // fill in the missing parts
 class Particle {
@@ -1534,14 +1534,57 @@ public:
 
 	void step() {
 		float3 temp = position;
+        // std::cout << position.x << std::endl;
 		// === fill in this part in A3 ===
 		// update the particle position and velocity here
-        velocity = velocity + globalGravity * deltaT;
-        position = position + (position - prevPosition) + deltaT * deltaT * globalGravity;
+        // velocity = velocity + globalGravity * deltaT;
+#if ASST_NUM == A3_1 || ASST_NUM == A3_2 || ASST_NUM == A3_3 || ASST_NUM == A3_5
+        position += (position - prevPosition) + deltaT * deltaT * globalGravity;
         prevPosition = temp;
+#endif
+#if ASST_NUM == A3_2
+        if (position.x > 0.5) {
+            prevPosition.x = position.x - prevPosition.x + 0.5;
+            position.x = 0.5;
+        } else if (position.x < -0.5) {
+            prevPosition.x = position.x - prevPosition.x - 0.5;
+            position.x = -0.5;
+        } else if (position.y > 0.5) {
+            prevPosition.y = position.y - prevPosition.y + 0.5;
+            position.y = 0.5;
+        } else if (position.y < -0.5) {
+            prevPosition.y = position.y - prevPosition.y - 0.5;
+            position.y = -0.5;
+        } else if (position.z > 0.5) {
+            prevPosition.z = position.z - prevPosition.z + 0.5;
+            position.z = 0.5;
+        } else if (position.z < -0.5) {
+            prevPosition.z = position.z - prevPosition.z - 0.5;
+            position.z = -0.5;
+        }
+#elif ASST_NUM == A3_3 || ASST_NUM == A3_5
+        float r = 0.5;
+        if (position.x * position.x + position.y * position.y + position.z * position.z >= r * r) {
+            prevPosition += 2 * dot(position, position - prevPosition) * normalize(position);
+            position = r * normalize(position);
+        }
+#else
+        prevPosition = temp;
+#endif
 	}
+
+#if ASST_NUM == A3_4
+    void step_with_acc(float3 acc) {
+        float3 temp = position;
+        position = position + (position - prevPosition) + deltaT * deltaT * acc;
+        prevPosition = temp;
+    }
+#endif
 };
 
+#if ASST_NUM == A3_4
+float gravity_const = 2e-3f;
+#endif
 
 class ParticleSystem {
 public:
@@ -1555,6 +1598,7 @@ public:
 	void updateMesh() {
 		// you can optionally update the other mesh information (e.g., bounding box, BVH - which is tricky)
 		if (sphereSize > 0) {
+            // std::cout << sphereSize << std::endl;
 			const int n = int(sphere.triangles.size());
 			for (int i = 0; i < globalNumParticles; i++) {
 				for (int j = 0; j < n; j++) {
@@ -1570,9 +1614,9 @@ public:
 			const float particleSize = 0.005f;
 			for (int i = 0; i < globalNumParticles; i++) {
 				// facing toward the camera
+                particlesMesh.triangles[i].positions[2] = particles[i].position + particleSize * globalRight;
 				particlesMesh.triangles[i].positions[1] = particles[i].position + particleSize * globalUp;
                 particlesMesh.triangles[i].positions[0] = particles[i].position;
-				particlesMesh.triangles[i].positions[2] = particles[i].position + particleSize * globalRight;
 				particlesMesh.triangles[i].normals[0] = -globalViewDir;
 				particlesMesh.triangles[i].normals[1] = -globalViewDir;
 				particlesMesh.triangles[i].normals[2] = -globalViewDir;
@@ -1592,6 +1636,7 @@ public:
 				particlesMesh.triangles.resize(sphere.triangles.size() * globalNumParticles);
 				sphere.preCalc();
 				sphereSize = sphere.bbox.get_size().x * 0.5f;
+                // std::cout << sphereSize << std::endl;
 			} else {
 				particlesMesh.triangles.resize(globalNumParticles);
 			}
@@ -1604,9 +1649,38 @@ public:
 	void step() {
 		// add some particle-particle interaction here
 		// spherical particles can be implemented here
+#if ASST_NUM == A3_5
+        for (int k = 0; k < 5; ++k) {
+            for (int i = 0; i < globalNumParticles; i++) {
+                for (int j = 0; j < globalNumParticles; ++j) {
+                    if (j != i) {
+                        float vec_len = (2 * sphereSize - length(particles[i].position - particles[j].position)) / 2;
+                        if (vec_len > 0) {
+                            particles[i].position -= vec_len * normalize(particles[j].position - particles[i].position);
+                            particles[j].position -= vec_len * normalize(particles[i].position - particles[j].position);
+                        }
+                    }
+                }
+                particles[i].step();
+            }
+        }
+#else
 		for (int i = 0; i < globalNumParticles; i++) {
+#if ASST_NUM == A3_4
+            float3 accumulated_a {0.0, 0.0, 0.0};
+            for (int j = 0; j < globalNumParticles; ++j) {
+                if (j != i) {
+                    float vec_length = length(particles[j].position - particles[i].position);
+                    float3 a_ij = gravity_const * (particles[j].position - particles[i].position) / (vec_length * vec_length * vec_length + Epsilon);
+                    accumulated_a += a_ij;
+                }
+            }
+            particles[i].step_with_acc(accumulated_a);
+#else
 			particles[i].step();
+#endif
 		}
+#endif
 		updateMesh();
 	}
 };
@@ -1774,9 +1848,10 @@ static float3 shade(const HitInfo& hit, const float3& viewDir, const int level, 
 		float3 brdf, irradiance;
 
 		// loop over all the point light sources
-		for (auto & pointLightSource : globalScene.pointLightSources) {
-			float3 l = pointLightSource->position - hit.P;
-#if ASST_NUM == 2
+        for (int i = 0; i < globalScene.pointLightSources.size(); i++) {
+            float3 l = globalScene.pointLightSources[i]->position - hit.P;
+
+#if ASST_NUM == 2 || ASST_NUM == A3_5
             if (dot(l, hit.N) * dot(viewDir, hit.N) < 0) {
                 continue;
             }
@@ -1793,7 +1868,7 @@ static float3 shade(const HitInfo& hit, const float3& viewDir, const int level, 
 			l /= sqrtf(falloff);
 
 			// get the irradiance
-			irradiance = float(std::max(0.0f, dot(hit.N, l)) / (4.0 * PI * falloff)) * pointLightSource->wattage;
+			irradiance = float(std::max(0.0f, dot(hit.N, l)) / (4.0 * PI * falloff)) * globalScene.pointLightSources[i]->wattage;
 			brdf = hit.material->BRDF(l, viewDir, hit.N);
 
 			if (hit.material->isTextured) {
